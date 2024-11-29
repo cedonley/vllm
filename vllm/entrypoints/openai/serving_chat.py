@@ -496,7 +496,11 @@ class OpenAIServingChat(OpenAIServing):
                         if self._should_check_for_unstreamed_tool_arg_tokens(
                                 delta_message, output) and tool_parser:
                             latest_delta_len = 0
-                            if (isinstance(delta_message,DeltaMessage)):
+                            if ((isinstance(
+                                    delta_message.tool_calls[0].function,
+                                    DeltaFunctionCall)) and isinstance(
+                                        delta_message.tool_calls[0].function.
+                                        arguments, str)):
                                 latest_delta_len = len(
                                     delta_message.tool_calls[0].function.
                                     arguments)
