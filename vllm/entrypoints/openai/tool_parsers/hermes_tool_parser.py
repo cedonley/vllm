@@ -190,7 +190,8 @@ class Hermes2ProToolParser(ToolParser):
                 if diff:
                     diff = diff.encode('utf-8').decode(
                         'unicode_escape') if diff is str else diff
-                    diff = json.dumps(
+                    end_loc = delta_text.rindex('"}')
+                    diff = delta_text[:end_loc] + json.dumps(
                         diff, ensure_ascii=False
                     )[len(self.streamed_args_for_tool[self.current_tool_id]):]
                     logger.debug(

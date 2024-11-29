@@ -260,12 +260,12 @@ class MistralToolParser(ToolParser):
                         "mid-arguments")
                     delta = None
                 elif cur_arguments and not prev_arguments:
-                    cur_arguments_json = json.dumps(cur_arguments)
+                    cur_arguments_json = json.dumps(cur_arguments)[:-2]
                     logger.debug("finding %s in %s", new_text,
                                  cur_arguments_json)
 
                     arguments_delta = cur_arguments_json[:cur_arguments_json.
-                                                         index(new_text) +
+                                                         rindex(new_text) +
                                                          len(new_text)]
                     logger.debug("First tokens in arguments received: %s",
                                  arguments_delta)
