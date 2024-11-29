@@ -496,8 +496,7 @@ class OpenAIServingChat(OpenAIServing):
                         if self._should_check_for_unstreamed_tool_arg_tokens(
                                 delta_message, output) and tool_parser:
                             latest_delta_len = 0
-                            if (delta_message and 'arguments' in 
-                                    delta_message.tool_calls[0].function):
+                            if (isinstance(delta_message,DeltaMessage)):
                                 latest_delta_len = len(
                                     delta_message.tool_calls[0].function.
                                     arguments)
@@ -512,7 +511,7 @@ class OpenAIServingChat(OpenAIServing):
                             # get what we've streamed so far for arguments
                             # for the current tool
                             actual_call = tool_parser.streamed_args_for_tool[
-                                    index][:-latest_delta_len]
+                                index][:-latest_delta_len]
 
                             # check to see if there's anything left to stream
                             remaining_call = expected_call.replace(
