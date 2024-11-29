@@ -495,13 +495,19 @@ class OpenAIServingChat(OpenAIServing):
 
                         if self._should_check_for_unstreamed_tool_arg_tokens(
                                 delta_message, output) and tool_parser:
-                            latest_delta_len = len(delta_message.tool_calls[0].function.arguments)
+                            latest_delta_len = 0
+                            if (delta_message and 'arguments' in 
+                                    delta_message.tool_calls[0].function):
+                                latest_delta_len = len(
+                                    delta_message.tool_calls[0].function.
+                                    arguments)
 
                             # get the expected call based on partial JSON
                             # parsing which "autocompletes" the JSON
                             expected_call = json.dumps(
                                 tool_parser.prev_tool_call_arr[index].get(
-                                    "arguments", {}),ensure_ascii=False)
+                                    "arguments", {}),
+                                ensure_ascii=False)
 
                             # get what we've streamed so far for arguments
                             # for the current tool
