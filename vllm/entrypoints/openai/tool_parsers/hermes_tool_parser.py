@@ -91,7 +91,8 @@ class Hermes2ProToolParser(ToolParser):
                         function=FunctionCall(
                             name=function_call["name"],
                             # function call args are JSON but as a string
-                            arguments=json.dumps(function_call["arguments"])))
+                            arguments=json.dumps(function_call["arguments"],
+                                                 ensure_ascii=False)))
                     for function_call in raw_function_calls
                 ]
 
@@ -226,6 +227,8 @@ class Hermes2ProToolParser(ToolParser):
             # case - we haven't sent the tool name yet. If it's available, send
             #   it. otherwise, wait until it's available.
             if not self.current_tool_name_sent:
+                if (current_tool_call is None):
+                    return None
                 function_name: Union[str, None] = current_tool_call.get("name")
                 if function_name:
                     self.current_tool_name_sent = True
@@ -285,13 +288,17 @@ class Hermes2ProToolParser(ToolParser):
             #   autocompleting the JSON
             elif cur_arguments and not prev_arguments:
 
-                cur_arguments_json = json.dumps(cur_arguments)
+                cur_arguments_json = json.dumps(cur_arguments,
+                                                ensure_ascii=False)
                 logger.debug("finding %s in %s", delta_text,
                              cur_arguments_json)
 
                 # get the location where previous args differ from current
-                args_delta_start_loc = cur_arguments_json.index(delta_text) \
-                                       + len(delta_text)
+                args_delta_start_loc = cur_arguments_json. \
+                                           rindex(delta_text[:-2]) + \
+                                           len(delta_text)
+                if (args_delta_start_loc > len(cur_arguments_json) - 2):
+                    args_delta_start_loc = len(cur_arguments_json) - 2
 
                 # use that to find the actual delta
                 arguments_delta = cur_arguments_json[:args_delta_start_loc]
