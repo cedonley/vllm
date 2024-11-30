@@ -140,6 +140,8 @@ class Hermes2ProToolParser(ToolParser):
                 self.tool_call_start_token_id)
             cur_tool_end_count = current_token_ids.count(
                 self.tool_call_end_token_id)
+            tool_call_portion = None
+            text_portion = None
 
             # case: if we're generating text, OR rounding out a tool call
             if (cur_tool_start_count == cur_tool_end_count
@@ -192,9 +194,7 @@ class Hermes2ProToolParser(ToolParser):
                     diff = diff.encode('utf-8').decode(
                         'unicode_escape') if diff is str else diff
                     end_loc = delta_text.rindex('"}')
-                    diff = delta_text[:end_loc] + json.dumps(
-                        diff, ensure_ascii=False
-                    )[len(self.streamed_args_for_tool[self.current_tool_id]):]
+                    diff = delta_text[:end_loc] + '"}'
                     logger.debug(
                         "Finishing tool and found diff that had not "
                         "been streamed yet: %s", diff)
@@ -294,11 +294,11 @@ class Hermes2ProToolParser(ToolParser):
                              cur_arguments_json)
 
                 # get the location where previous args differ from current
-                args_delta_start_loc = cur_arguments_json. \
-                                           rindex(delta_text[:-2]) + \
+                if (delta_text not in cur_arguments_json[:-2]):
+                    return None
+                args_delta_start_loc = cur_arguments_json[:-2]. \
+                                           rindex(delta_text) + \
                                            len(delta_text)
-                if (args_delta_start_loc > len(cur_arguments_json) - 2):
-                    args_delta_start_loc = len(cur_arguments_json) - 2
 
                 # use that to find the actual delta
                 arguments_delta = cur_arguments_json[:args_delta_start_loc]
