@@ -145,10 +145,21 @@ class Hermes2ProToolParser(ToolParser):
 
             # case: if we're generating text, OR rounding out a tool call
             if (cur_tool_start_count == cur_tool_end_count
-                    and prev_tool_end_count == cur_tool_end_count):
+                    and prev_tool_end_count == cur_tool_end_count
+                    and self.tool_call_end_token not in delta_text):
                 logger.debug("Generating text content! skipping tool parsing.")
-                if delta_text != self.tool_call_end_token:
-                    return DeltaMessage(content=delta_text)
+                return DeltaMessage(content=delta_text)
+
+            if self.tool_call_end_token in delta_text:
+                logger.debug("tool_call_end_token in delta_text")
+                full_text = current_text + delta_text
+                tool_call_portion = full_text.split(
+                    self.tool_call_start_token)[-1].split(
+                        self.tool_call_end_token)[0].rstrip()
+                delta_text = delta_text.split(
+                    self.tool_call_end_token)[0].rstrip()
+                text_portion = delta_text.split(
+                    self.tool_call_end_token)[-1].lstrip()
 
             # case: if tool open & close tag counts don't match, we're doing
             # imaginary "else" block here
@@ -187,12 +198,14 @@ class Hermes2ProToolParser(ToolParser):
 
             # case -- the current tool call is being closed.
             elif (cur_tool_start_count == cur_tool_end_count
-                  and cur_tool_end_count > prev_tool_end_count):
+                  and cur_tool_end_count >= prev_tool_end_count):
                 diff = self.prev_tool_call_arr[self.current_tool_id].get(
                     "arguments")
                 if diff:
                     diff = diff.encode('utf-8').decode(
                         'unicode_escape') if diff is str else diff
+                    if ('"}' not in delta_text):
+                        return None
                     end_loc = delta_text.rindex('"}')
                     diff = delta_text[:end_loc] + '"}'
                     logger.debug(
