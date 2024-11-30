@@ -251,6 +251,8 @@ class MistralToolParser(ToolParser):
                 cur_arguments = current_tool_call.get("arguments")
 
                 new_text = delta_text.replace("\'", "\"")
+                if ('"}' in new_text):
+                    new_text = new_text[:new_text.rindex('"}')]
 
                 if not cur_arguments and not prev_arguments:
 
@@ -266,6 +268,8 @@ class MistralToolParser(ToolParser):
                     logger.debug("finding %s in %s", new_text,
                                  cur_arguments_json)
 
+                    if (new_text not in cur_arguments_json):
+                        return None
                     arguments_delta = cur_arguments_json[:cur_arguments_json.
                                                          rindex(new_text) +
                                                          len(new_text)]
