@@ -515,7 +515,9 @@ class OpenAIServingChat(OpenAIServing):
                             # get what we've streamed so far for arguments
                             # for the current tool
                             actual_call = tool_parser.streamed_args_for_tool[
-                                index][:-latest_delta_len]
+                                index]
+                            if (latest_delta_len > 0):
+                                actual_call = actual_call[:-latest_delta_len]
 
                             # check to see if there's anything left to stream
                             remaining_call = expected_call.replace(
